@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Word Climb Daily</title>
+<meta name="description" content="Today's word ladder. Climb from one word to another, one letter at a time. A new puzzle every day.">
+<meta name="theme-color" content="#FFF6E0">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Word Climb Daily">
+<meta property="og:description" content="Today's word ladder: climb from one word to another, one letter at a time. Can you match par?">
+<meta property="og:url" content="https://wordclimb.github.io/daily/">
+<meta property="og:image" content="https://wordclimb.github.io/daily/og-image.png">
+<meta property="og:image:width" content="1024">
+<meta property="og:image:height" content="500">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" href="icon.png">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="daily.css">
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2l2.9 6.2 6.7.8-5 4.6 1.4 6.7L12 17.1l-6 3.4 1.4-6.7-5-4.6 6.7-.8z"/></svg>
+      <span class="word">WORD CLIMB</span>
+    </div>
+    <span class="pill" id="dayLabel">Daily</span>
+    <button class="chip" id="helpBtn" aria-label="How to play">?</button>
+  </header>
+  <p class="hud" id="hud" aria-live="polite"></p>
+
+  <main class="board-wrap" id="boardWrap">
+    <div class="board" id="board" aria-label="The ladder"></div>
+  </main>
+
+  <p class="message" id="message" role="status" aria-live="polite"></p>
+
+  <div class="powers">
+    <button class="power" id="hintBtn"><span>Hint</span><span class="badge" id="hintBadge">1</span></button>
+    <button class="power" id="undoBtn">Undo</button>
+    <button class="power hero hidden" id="resultsBtn">Results</button>
+  </div>
+
+  <div class="keyboard" id="keyboard" aria-label="Keyboard"></div>
+</div>
+
+<div class="scrim hidden" id="helpModal" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+  <div class="card">
+    <h2 id="helpTitle">How to climb</h2>
+    <p>Climb from the <b>bottom word</b> to the <b class="goal-word">goal at the top</b>. Change <b>one letter</b> at a time, and every rung must be a real word.</p>
+    <p><b>Par</b> is the shortest climb. Match it for a <b>Perfect</b>.</p>
+    <p>You get <b>3 mistakes</b>. A typo that isn't a word is free.</p>
+    <p>One <b>hint</b> marks the letter to change, but caps your grade at Good.</p>
+    <p class="small">A new puzzle every day — the same one in the app.</p>
+    <button class="btn hero" id="helpClose">Let's climb</button>
+  </div>
+</div>
+
+<div class="scrim hidden" id="resultsModal" role="dialog" aria-modal="true" aria-labelledby="gradeLabel">
+  <div class="card results">
+    <button class="close" id="resultsClose" aria-label="Close">✕</button>
+    <div class="hero-card" id="heroCard">
+      <span class="kicker" id="resultsDay"></span>
+      <span class="grade" id="gradeLabel"></span>
+      <span class="stars" id="starsLabel" aria-hidden="true"></span>
+      <span class="route" id="routeLabel"></span>
+    </div>
+    <div class="facts">
+      <div class="fact"><span class="k">Par → You</span><span class="v" id="parFact"></span><span class="s" id="parNote"></span></div>
+      <div class="fact"><span class="k">Streak</span><span class="v" id="streakFact"></span><span class="s" id="bestNote"></span></div>
+    </div>
+    <div class="path" id="pathRows" aria-label="Your path"></div>
+    <button class="btn hero" id="shareBtn">Share result</button>
+    <p class="next" id="nextLabel"></p>
+    <div class="cta" id="cta"></div>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script src="daily.js"></script>
+</body>
+</html>
