@@ -38,6 +38,7 @@
   const number = index + 1;
   const len = puzzle.start.length;
   const words = new Set(window.WC_DATA.words[len].split(' '));
+  document.documentElement.style.setProperty('--len', String(Math.max(len, 5)));  // tiles fit 6-7 letters
 
   // One-letter neighbours by wildcard buckets, and every word's distance to the goal (one BFS).
   const buckets = new Map();

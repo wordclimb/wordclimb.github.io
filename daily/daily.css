@@ -12,9 +12,10 @@
   --alert: #D13438;
   --display: "Lilita One", "Arial Rounded MT Bold", system-ui, sans-serif;
   --body: "Nunito", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  /* A tile fits five across the rails and eight rows above the keyboard; on short phones it stops
-     at 34px and the ladder scrolls instead. */
-  --tile: min(54px, calc((100vw - 132px) / 5), max(34px, calc((100svh - 430px) / 7.5)));
+  /* A tile fits the day's word (3-7 letters, --len set by daily.js) across the rails and eight rows
+     above the keyboard; on short phones it stops at 34px and the ladder scrolls instead. */
+  --len: 5;
+  --tile: min(54px, calc((100vw - 132px) / var(--len)), max(34px, calc((100svh - 430px) / 7.5)));
   --gap: max(5px, calc(var(--tile) * 0.13));
 }
 
