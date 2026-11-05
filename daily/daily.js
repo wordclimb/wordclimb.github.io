@@ -5,10 +5,10 @@
 (() => {
   'use strict';
 
-  // Where the "more climbs" card points. Before the store launch the app is a closed test, so the
-  // card recruits testers; set live: true on launch day.
+  // Where the "more climbs" card points. live: false recruits closed-test testers (pre-launch);
+  // live: true (public on Google Play since the 2026-11 launch) links the store page.
   const APP = {
-    live: false,
+    live: true,
     store: 'https://play.google.com/store/apps/details?id=com.garnergames.starladder',
     testers: 'https://groups.google.com/g/wordclimbtesters',
     optIn: 'https://play.google.com/apps/testing/com.garnergames.starladder',
@@ -18,7 +18,6 @@
   const MISTAKES = 3;                                     // BalanceConfig.DailyMistakeBudget
   const PERFECT_MAX_DETOURS = 0, GOOD_MAX_DETOURS = 2;    // BalanceConfig
   const GRADES = ['Failed', 'Solved', 'Good', 'Perfect']; // PathGrade, value = stars
-  const GLYPH = ['🟩', '🟨', '⬛'];                       // optimal · detour · mistake
   const OK = 0, DETOUR = 1, MISTAKE = 2;
 
   // ── today's puzzle ───────────────────────────────────────────────────
@@ -183,13 +182,27 @@
     return { current: alive ? st.current : 0, best: st.best };
   }
 
+  // The ladder grid, the app's exact text (ShareCardBuilder.BuildDailyShapeCard): one row per move, a
+  // square per letter with the changed one lit (a refused word is a full ⬛ row), read bottom-up like
+  // the board. Shape only: which letter changed, never the letters.
   function shareText() {
-    const g = grade();
+    const g = s.failed ? 0 : grade();
     const score = s.failed ? 'X' : String(s.chain.length - 1);
     const st = streak();
-    const lines = [`Word Climb Daily #${number} · Par ${puzzle.par} · ${score}/${puzzle.par} · ${'★'.repeat(g)}${'☆'.repeat(3 - g)}${s.hintUsed ? '⚡' : ''}`];
-    for (const m of s.moves) lines.push(GLYPH[m]);
-    lines.push(`🔥 Streak ${st.current} · Best ${st.best}`, SITE);
+    const badge = '⭐'.repeat(g) + (s.hintUsed ? '⚡' : '');
+    const rows = [];
+    let k = 0;
+    for (const m of s.moves) {
+      if (m === MISTAKE) { rows.push('⬛'.repeat(len)); continue; }
+      const a = s.chain[k], b = s.chain[k + 1];
+      k++;
+      let row = '';
+      for (let i = 0; i < len; i++) row += a && b && a[i] !== b[i] ? (m === DETOUR ? '🟨' : '🟩') : '⬜';
+      rows.push(row);
+    }
+    const lines = [`Word Climb #${number} ${badge ? badge + ' ' : ''}${score}/${puzzle.par}`, ...rows.reverse()];
+    if (st.current > 0) lines.push(`🔥 ${st.current}`);
+    lines.push(SITE);
     return lines.join('\n');
   }
 
