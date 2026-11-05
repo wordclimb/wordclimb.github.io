@@ -3,22 +3,41 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Word Climb</title>
-<meta name="description" content="Word Climb: a word ladder puzzle game. Climb from one word to another, one letter at a time. Play today's Daily in your browser.">
-<meta property="og:title" content="Word Climb">
-<meta property="og:description" content="A word ladder puzzle game. Play today's Daily in your browser.">
+<title>Word Climb: a free daily word ladder puzzle</title>
+<meta name="description" content="Word Climb is a word ladder puzzle. Change one letter at a time to climb from one word to another. Play today's free Daily in your browser, or get the app on Google Play.">
+<link rel="canonical" href="https://wordclimb.github.io/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://wordclimb.github.io/">
+<meta property="og:title" content="Word Climb: a free daily word ladder puzzle">
+<meta property="og:description" content="Change one letter at a time to climb from one word to another. A new puzzle every day.">
 <meta property="og:image" content="https://wordclimb.github.io/daily/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" type="image/png" href="daily/icon.png">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "MobileApplication",
+  "name": "Word Climb: Word Ladder Puzzle",
+  "operatingSystem": "Android",
+  "applicationCategory": "GameApplication",
+  "url": "https://play.google.com/store/apps/details?id=com.garnergames.starladder",
+  "description": "A word ladder puzzle. Change one letter at a time to climb from the start word to the goal word. A new Daily puzzle every day, 700 puzzles in the library, and timed modes.",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "author": { "@type": "Organization", "name": "amze games", "email": "starladdergames@gmail.com" }
+}
+</script>
 <style>
   body { margin: 0; background: #FFF6E0; color: #111111; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
   main { max-width: 560px; margin: 0 auto; padding: 56px 20px; }
   h1 { font-size: 40px; margin: 0 0 8px; }
+  h2 { font-size: 24px; margin: 32px 0 8px; }
   p { font-size: 18px; line-height: 1.5; }
   a { color: #2D5BFF; }
   ul { padding-left: 20px; font-size: 18px; line-height: 1.8; }
   .play { display: inline-block; margin: 8px 0 24px; padding: 14px 22px; border: 3px solid #111111; border-radius: 16px;
           background: #FF4F9A; color: #111111; font-size: 20px; font-weight: 800; text-decoration: none; box-shadow: 0 4px 0 #111111; }
   .store { background: #FFFFFF; margin-left: 8px; }
+  .ladder { font-family: ui-monospace, Consolas, monospace; font-size: 20px; letter-spacing: 2px; }
 </style>
 </head>
 <body>
@@ -27,6 +46,21 @@
   <p>A word ladder puzzle game: climb from one word to another by changing one letter at a time.</p>
   <a class="play" href="daily/">Play today's Daily →</a>
   <a class="play store" href="https://play.google.com/store/apps/details?id=com.garnergames.starladder">Get it on Google Play</a>
+
+  <h2>How to play</h2>
+  <p>You start at the bottom word and the goal is at the top. Change one letter, make a real word, and keep going until you reach the goal.</p>
+  <p class="ladder">COLD → CORD → WORD → WARD → WARM</p>
+  <p>Every puzzle has a par, the fewest moves it can be done in, so you always know how close you got.</p>
+
+  <h2>A new word ladder every day</h2>
+  <p>The Daily is the same puzzle for everybody. Play it here in your browser, no sign-up, then share how you did without spoiling the answer.</p>
+
+  <h2>The app</h2>
+  <p>Word Climb on Android has the Daily plus 700 puzzles from easy 3-letter words up to 7-letter ones, Classic, Timed and Survival modes, and 20 color themes. It's free with ads, and works offline.</p>
+
+  <h2>Where word ladders come from</h2>
+  <p>Lewis Carroll came up with them in 1877 and called them Doublets. Word Climb is my take on them.</p>
+
   <ul>
     <li><a href="legal/privacy-policy.html">Privacy policy</a></li>
     <li><a href="legal/terms-of-use.html">Terms of use</a></li>
