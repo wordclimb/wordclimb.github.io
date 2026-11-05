@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Word Ladder Solver: find the shortest ladder between two words | Word Climb</title>
+<meta name="description" content="Free word ladder solver. Type two words of the same length and see the shortest way to climb from one to the other, changing one letter at a time.">
+<link rel="canonical" href="https://wordclimb.github.io/solver/">
+<meta property="og:title" content="Word Ladder Solver">
+<meta property="og:description" content="Find the shortest word ladder between any two words, one letter at a time.">
+<meta property="og:image" content="https://wordclimb.github.io/daily/og-image.png">
+<link rel="icon" type="image/png" href="../daily/icon.png">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Word Ladder Solver",
+  "url": "https://wordclimb.github.io/solver/",
+  "applicationCategory": "GameApplication",
+  "operatingSystem": "Any",
+  "description": "Find the shortest word ladder between two words of the same length, changing one letter at a time.",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+</script>
+<style>
+  body { margin: 0; background: #FFF6E0; color: #111; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 620px; margin: 0 auto; padding: 40px 20px 64px; }
+  h1 { font-size: 36px; margin: 0 0 8px; }
+  h2 { font-size: 22px; margin: 32px 0 8px; }
+  p { font-size: 18px; line-height: 1.5; }
+  a { color: #2D5BFF; }
+  form { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 20px 0 8px; }
+  input { width: 150px; padding: 12px 14px; font: 800 22px ui-monospace, Consolas, monospace; letter-spacing: 4px; text-transform: uppercase;
+          border: 3px solid #111; border-radius: 12px; background: #fff; }
+  .to { font-weight: 800; font-size: 18px; }
+  button, .cta { padding: 12px 18px; border: 3px solid #111; border-radius: 14px; background: #FF4F9A; color: #111;
+                 font-weight: 800; font-size: 18px; cursor: pointer; box-shadow: 0 4px 0 #111; text-decoration: none; display: inline-block; }
+  .cta.alt { background: #fff; }
+  #out { margin-top: 20px; min-height: 40px; }
+  .ladder { display: flex; flex-direction: column-reverse; gap: 8px; align-items: flex-start; margin: 12px 0; }
+  .rung { display: flex; gap: 6px; }
+  .tile { width: 40px; height: 40px; border: 2px solid #111; border-radius: 8px; background: #fff;
+          font: 800 22px/38px ui-monospace, Consolas, monospace; text-align: center; }
+  .tile.changed { background: #2ED48B; }
+  .rung.goal .tile { background: #FFD23F; }
+  .note { font-size: 16px; color: #5C5446; }
+  .msg { font-size: 18px; font-weight: 700; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Word ladder solver</h1>
+  <p>Type a start word and a goal word with the same number of letters. The solver finds the shortest climb, changing one letter at a time, where every step is a real word.</p>
+
+  <form id="f" autocomplete="off">
+    <input id="a" aria-label="Start word" maxlength="7" placeholder="lamp" required>
+    <span class="to">to</span>
+    <input id="b" aria-label="Goal word" maxlength="7" placeholder="dark" required>
+    <button type="submit">Solve</button>
+  </form>
+  <p class="note">Works with 3 to 7 letter words, using the same dictionary as the Word Climb game.</p>
+  <div id="out" aria-live="polite"></div>
+
+  <h2>Rather solve one yourself?</h2>
+  <p>There's a new word ladder every day, the same one for everybody, free in your browser.</p>
+  <p><a class="cta" href="../daily/">Play today's Daily</a> <a class="cta alt" href="https://play.google.com/store/apps/details?id=com.garnergames.starladder">Get Word Climb on Google Play</a></p>
+  <p>Want some on paper? Try the <a href="../word-ladders/">free printable word ladders</a>.</p>
+
+  <h2>How word ladders work</h2>
+  <p>A word ladder starts at one word and ends at another. Each step changes exactly one letter, and every step has to be a real word: COLD → CORD → WORD → WARD → WARM. Lewis Carroll invented them in 1877 and called them Doublets. The fewest steps a ladder can be done in is called par.</p>
+</main>
+<script src="../daily/data.js"></script>
+<script>
+(() => {
+  'use strict';
+  const D = window.WC_DATA;
+  const dict = {};
+  const daily = new Set(atob(D.pool).split(';').map(l => l.split(' ')).filter(p => p.length >= 2)
+    .flatMap(([s, g]) => [s + '>' + g, g + '>' + s]));
+  const out = document.getElementById('out');
+  const esc = s => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const say = html => { out.innerHTML = html; };
+
+  function words(n) {
+    if (!dict[n]) dict[n] = new Set((D.words[n] || '').split(' ').filter(Boolean));
+    return dict[n];
+  }
+
+  function solve(a, b) {
+    const set = words(a.length), prev = new Map([[a, null]]), q = [a];
+    for (let h = 0; h < q.length; h++) {
+      const u = q[h];
+      if (u === b) break;
+      for (let i = 0; i < u.length; i++) for (let c = 97; c <= 122; c++) {
+        const v = u.slice(0, i) + String.fromCharCode(c) + u.slice(i + 1);
+        if (set.has(v) && !prev.has(v)) { prev.set(v, u); q.push(v); }
+      }
+    }
+    if (!prev.has(b)) return null;
+    const path = [b];
+    while (prev.get(path[path.length - 1])) path.push(prev.get(path[path.length - 1]));
+    return path.reverse();
+  }
+
+  function draw(path) {
+    const rungs = path.map((w, i) => {
+      const tiles = [...w].map((ch, j) => {
+        const changed = i > 0 && path[i - 1][j] !== ch;
+        return `<span class="tile${changed ? ' changed' : ''}">${esc(ch.toUpperCase())}</span>`;
+      }).join('');
+      return `<div class="rung${i === path.length - 1 ? ' goal' : ''}">${tiles}</div>`;
+    }).join('');
+    const moves = path.length - 1;
+    return `<p class="msg">${moves} move${moves === 1 ? '' : 's'}: ${path.map(w => esc(w.toUpperCase())).join(' → ')}</p>
+            <div class="ladder">${rungs}</div>
+            <p class="note">That's the shortest possible, so par is ${moves}. There may be other ways up in the same number of moves.</p>`;
+  }
+
+  document.getElementById('f').addEventListener('submit', e => {
+    e.preventDefault();
+    const a = document.getElementById('a').value.trim().toLowerCase();
+    const b = document.getElementById('b').value.trim().toLowerCase();
+    if (!/^[a-z]{3,7}$/.test(a) || !/^[a-z]{3,7}$/.test(b)) return say('<p class="msg">Use letters only, 3 to 7 of them.</p>');
+    if (a.length !== b.length) return say('<p class="msg">Both words need the same number of letters.</p>');
+    if (a === b) return say('<p class="msg">Those are the same word. You\'re already there!</p>');
+    const set = words(a.length), missing = [a, b].filter(w => !set.has(w));
+    if (missing.length) return say(`<p class="msg">${missing.map(w => esc(w.toUpperCase())).join(' and ')} isn't in our word list.</p>`);
+    if (daily.has(a + '>' + b)) return say('<p class="msg">That one is a Word Climb Daily puzzle, so no spoilers here.</p><p><a class="cta" href="../daily/">Try it in the Daily</a></p>');
+    const path = solve(a, b);
+    say(path ? draw(path) : `<p class="msg">There's no ladder between ${esc(a.toUpperCase())} and ${esc(b.toUpperCase())} with these words.</p>`);
+  });
+})();
+</script>
+</body>
+</html>
