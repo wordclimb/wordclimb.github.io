@@ -13,9 +13,9 @@
   --display: "Lilita One", "Arial Rounded MT Bold", system-ui, sans-serif;
   --body: "Nunito", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   /* A tile fits the day's word (3-7 letters, --len set by daily.js) across the rails and eight rows
-     above the keyboard; on short phones it stops at 34px and the ladder scrolls instead. */
+     above the keyboard (less the GOAL / START tags); on short phones it stops at 34px and the ladder scrolls instead. */
   --len: 5;
-  --tile: min(54px, calc((100vw - 132px) / var(--len)), max(34px, calc((100svh - 430px) / 7.5)));
+  --tile: min(54px, calc((100vw - 132px) / var(--len)), max(34px, calc((100svh - 470px) / 7.5)));
   --gap: max(5px, calc(var(--tile) * 0.13));
 }
 
@@ -49,10 +49,18 @@ button { font: inherit; color: inherit; cursor: pointer; }
 
 /* ── the ladder ─────────────────────────────────────────────────────── */
 .board-wrap { flex: 1; overflow-y: auto; display: flex; justify-content: center; padding: 10px 0 6px; }
-.board { position: relative; display: flex; flex-direction: column; gap: var(--gap); padding: 0 26px; margin: auto 0; }
+/* Room above the goal and below the ground for the GOAL / START tags; the rails still end just past the rows. */
+.board { position: relative; display: flex; flex-direction: column; gap: var(--gap); padding: 30px 26px calc(var(--gap) + 36px); margin: auto 0; }
 .board::before, .board::after {           /* the rails */
-  content: ""; position: absolute; top: -6px; bottom: -10px; width: 6px; border-radius: 3px; background: var(--ink);
+  content: ""; position: absolute; top: 24px; bottom: calc(var(--gap) + 26px); width: 6px; border-radius: 3px; background: var(--ink);
 }
+.tag {                                    /* GOAL over the top word, START under the ground */
+  position: absolute; left: 50%; transform: translateX(-50%); z-index: 2; height: 22px; padding: 0 10px;
+  border: 2.5px solid var(--ink); border-radius: 999px; background: var(--paper); box-shadow: 0 2px 0 var(--ink);
+  font-family: var(--display); font-size: 13px; line-height: 17px; letter-spacing: 1px; white-space: nowrap;
+}
+.tag.goal-tag { top: 0; background: var(--sun); }
+.tag.start-tag { bottom: 0; }
 .board::before { left: 4px; }
 .board::after { right: 4px; }
 .row { position: relative; display: flex; gap: var(--gap); justify-content: center; }
@@ -90,6 +98,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 }
 .power:disabled { background: var(--panel); color: var(--muted); box-shadow: 0 2px 0 var(--muted); border-color: var(--muted); cursor: default; }
 .power.hero, .btn.hero { background: var(--pink); }
+.power.app { background: var(--cobalt); color: var(--paper); text-decoration: none; }
 .badge {
   min-width: 22px; height: 22px; padding: 0 6px; border-radius: 11px; background: var(--ink); color: var(--cream);
   font-family: var(--body); font-size: 13px; display: inline-grid; place-items: center;
@@ -173,4 +182,40 @@ button { font: inherit; color: inherit; cursor: pointer; }
 @media (prefers-reduced-motion: reduce) {
   .tile.pop, .row.shake, .row.new .tile, .card { animation: none; }
 }
+/* ── calendar ───────────────────────────────────────────────────────── */
+.chip svg { display: block; width: 22px; height: 22px; margin: auto; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }
+.fact.tap { text-align: left; cursor: pointer; }   /* the results Streak tile opens the calendar */
+.facts.three { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.cal .fact { padding: 10px; background: var(--paper); }
+.cal .fact .v { font-size: 24px; }
+.cal .fact.streak { background: var(--sun); }
+.cal .fact.solved { background: var(--mint); }
+.cal .fact:last-child { background: var(--paper); }
+.cal .fact:last-child .s { color: var(--muted); }
+.month { display: flex; align-items: center; justify-content: space-between; margin: 2px 0 10px; font-family: var(--display); font-size: 20px; }
+.month .nav {
+  width: 36px; height: 36px; padding: 0; border: 2.5px solid var(--ink); border-radius: 10px; background: var(--paper);
+  box-shadow: 0 3px 0 var(--ink); font-family: var(--display); font-size: 22px; line-height: 1;
+}
+.month .nav:disabled { opacity: .3; box-shadow: none; cursor: default; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+.cal-grid .dow { text-align: center; font-size: 12px; color: var(--muted); }
+.day { aspect-ratio: 1; display: grid; place-items: center; border: 2px solid transparent; border-radius: 9px; font-size: 14px; }
+.day.solved { background: var(--mint); border-color: var(--ink); }
+.day.failed { background: var(--ink); border-color: var(--ink); color: var(--cream); }
+.day.missed { background: var(--panel); }
+.day.before { color: var(--muted); }
+.day.future { color: var(--muted); opacity: .45; }
+.day.today { background: var(--paper); border-color: var(--ink); }
+.day.now { box-shadow: 0 0 0 3px var(--cobalt); }
+.legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 14px; margin: 14px 0 6px; font-size: 13px; }
+.legend i { display: inline-block; width: 14px; height: 14px; margin-right: 5px; vertical-align: -2px; border: 2px solid var(--ink); border-radius: 4px; }
+.legend i.solved { background: var(--mint); }
+.legend i.failed { background: var(--ink); }
+.legend i.missed { background: var(--panel); border-color: var(--panel); }
+.card .small.center { text-align: center; margin: 4px 0 0; }
+
+/* Narrow phones: "#313" instead of "Daily #313", and a smaller wordmark, so four header items fit. */
+@media (max-width: 420px) { .pill .long { display: none; } }
+@media (max-width: 374px) { .brand .star { display: none; } .top .brand .word { font-size: 18px; } .top { gap: 8px; } }
 @media (max-height: 640px) { .brand .word { font-size: 22px; } .key { height: 44px; } }

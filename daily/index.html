@@ -42,6 +42,7 @@
       <span class="word">WORD CLIMB</span>
     </div>
     <span class="pill" id="dayLabel">Daily</span>
+    <button class="chip" id="calBtn" aria-label="Your calendar"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10.5h17M8 3v4M16 3v4"/></svg></button>
     <button class="chip" id="helpBtn" aria-label="How to play">?</button>
   </header>
   <p class="hud" id="hud" aria-live="polite"></p>
@@ -56,6 +57,7 @@
     <button class="power" id="hintBtn"><span>Hint</span><span class="badge" id="hintBadge">1</span></button>
     <button class="power" id="undoBtn">Undo</button>
     <button class="power hero hidden" id="resultsBtn">Results</button>
+    <a class="power app hidden" id="appBtn" href="https://play.google.com/store/apps/details?id=com.garnergames.starladder">More climbs</a>
   </div>
 
   <div class="keyboard" id="keyboard" aria-label="Keyboard"></div>
@@ -84,12 +86,32 @@
     </div>
     <div class="facts">
       <div class="fact"><span class="k">Par → You</span><span class="v" id="parFact"></span><span class="s" id="parNote"></span></div>
-      <div class="fact"><span class="k">Streak</span><span class="v" id="streakFact"></span><span class="s" id="bestNote"></span></div>
+      <button class="fact tap" id="streakTile"><span class="k">Streak</span><span class="v" id="streakFact"></span><span class="s" id="bestNote"></span></button>
     </div>
     <div class="path" id="pathRows" aria-label="Your path"></div>
     <button class="btn hero" id="shareBtn">Share result</button>
-    <p class="next" id="nextLabel"></p>
     <div class="cta" id="cta"></div>
+    <p class="next" id="nextLabel"></p>
+  </div>
+</div>
+
+<div class="scrim hidden" id="calModal" role="dialog" aria-modal="true" aria-labelledby="calTitle">
+  <div class="card cal">
+    <button class="close" id="calClose" aria-label="Close">✕</button>
+    <h2 id="calTitle">Your climbs</h2>
+    <div class="facts three">
+      <div class="fact streak"><span class="k">Streak</span><span class="v" id="calStreak"></span><span class="s" id="calBest"></span></div>
+      <div class="fact solved"><span class="k">Solved</span><span class="v" id="calSolved"></span><span class="s">days</span></div>
+      <div class="fact"><span class="k">Not solved</span><span class="v" id="calMissed"></span><span class="s">days</span></div>
+    </div>
+    <div class="month">
+      <button class="nav" id="calPrev" aria-label="Previous month">‹</button>
+      <span id="calMonth"></span>
+      <button class="nav" id="calNext" aria-label="Next month">›</button>
+    </div>
+    <div class="cal-grid" id="calGrid"></div>
+    <div class="legend"><span><i class="solved"></i>Solved</span><span><i class="failed"></i>Tried, not solved</span><span><i class="missed"></i>Missed</span></div>
+    <p class="small center">Your climbs are saved in this browser.</p>
   </div>
 </div>
 

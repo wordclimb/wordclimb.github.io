@@ -13,6 +13,8 @@
     testers: 'https://groups.google.com/g/wordclimbtesters',
     optIn: 'https://play.google.com/apps/testing/com.garnergames.starladder',
   };
+  // The app is Android only: iPhones and iPads get the "more climbs" text without a store button.
+  const IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   const SITE = 'wordclimb.github.io/daily';
   const EPOCH = Date.UTC(2025, 0, 1);                     // DailyPuzzleService.Epoch
   const MISTAKES = 3;                                     // BalanceConfig.DailyMistakeBudget
@@ -224,6 +226,8 @@
   function render(newRow) {
     const board = $('board');
     board.textContent = '';
+    board.appendChild(el('span', 'tag goal-tag', 'GOAL'));
+    board.appendChild(el('span', 'tag start-tag', 'START'));
     const solved = s.done && !s.failed;
     const chain = s.chain;
 
@@ -256,6 +260,7 @@
     $('hintBadge').textContent = s.hintUsed ? '0' : '1';
     $('undoBtn').disabled = s.done || s.chain.length <= 1;
     $('resultsBtn').classList.toggle('hidden', !s.done);
+    $('appBtn').classList.toggle('hidden', !s.done || !APP.live || IOS);
     $('hintBtn').classList.toggle('hidden', s.done);
     $('undoBtn').classList.toggle('hidden', s.done);
     for (const k of document.querySelectorAll('.key')) k.disabled = s.done;
@@ -311,14 +316,16 @@
     $('parFact').textContent = `${puzzle.par} → ${s.failed ? 'X' : steps}`;
     $('parNote').textContent = s.failed ? 'out of mistakes' : steps === puzzle.par ? 'matched par' : `${steps - puzzle.par} over par`;
     $('streakFact').textContent = `${st.current} ${st.current === 1 ? 'day' : 'days'}`;
-    $('bestNote').textContent = `Best ${st.best}`;
+    $('bestNote').textContent = `Best ${st.best} · Calendar ›`;
     const path = $('pathRows');
     path.textContent = '';
     for (const m of s.moves) path.appendChild(el('span', 'dot c' + m));
     path.setAttribute('aria-label', `${count(OK)} optimal, ${count(DETOUR)} detours, ${count(MISTAKE)} mistakes`);
-    $('cta').innerHTML = APP.live
-      ? `<p><b>Want more climbs?</b> Get Word Climb on Google Play: endless Classic ladders, the Puzzle Library and Timed runs.</p>
-         <a class="btn" href="${APP.store}">Get it on Google Play</a>`
+    $('cta').innerHTML = APP.live && IOS
+      ? `<p><b>Want another climb now?</b> There's one Daily a day. The Word Climb app has 700 more puzzles, but it's only on Android for now.</p>`
+      : APP.live
+      ? `<p><b>Want another climb now?</b> There's one Daily a day. The Word Climb app has 700 more puzzles, endless Classic ladders and Timed runs.</p>
+         <a class="btn" href="${APP.store}">Get the app on Google Play</a>`
       : `<p><b>Want more climbs?</b> The Word Climb app has endless Classic ladders, the Puzzle Library and Timed runs. It's in early testing on Android.</p>
          <a class="btn" href="${APP.testers}" target="_blank" rel="noopener">Join the testers</a>
          <p class="fine">After joining, tap “Become a tester” on <a href="${APP.optIn}" target="_blank" rel="noopener">this page</a> to install it.</p>`;
@@ -348,19 +355,99 @@
     setTimeout(() => { b.textContent = was; }, 1800);
   }
 
-  // ── wiring ───────────────────────────────────────────────────────────
-  const modalOpen = () => !$('helpModal').classList.contains('hidden') || !$('resultsModal').classList.contains('hidden');
-  function closeModals() { $('helpModal').classList.add('hidden'); $('resultsModal').classList.add('hidden'); }
+  // ── calendar ─────────────────────────────────────────────────────────
+  // Every day this browser played is already saved under its own wc.daily.<date> key (never deleted),
+  // so the calendar reads those: solved, tried (failed, or left unfinished), or missed since the first climb.
+  const DAY_PREFIX = 'wc.daily.';
+  const DAY_LABELS = { solved: 'solved', failed: 'tried, not solved', missed: 'missed', today: 'today', before: '', future: '' };
+  let calView = new Date(now.getFullYear(), now.getMonth(), 1);
 
-  $('dayLabel').textContent = `Daily #${number}`;
+  function playedDays() {
+    const days = new Map();
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        const iso = k && k.startsWith(DAY_PREFIX) ? k.slice(DAY_PREFIX.length) : '';
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) continue;
+        const d = load(k, null);
+        if (d) days.set(iso, d.done ? (d.failed ? 'failed' : 'solved') : 'open');
+      }
+    } catch { /* storage blocked: an empty calendar */ }
+    return days;
+  }
+
+  function dayStatus(iso, days, first) {
+    const st = days.get(iso);
+    if (st === 'solved') return 'solved';
+    if (iso === today) return st === 'failed' ? 'failed' : 'today';
+    if (iso > today) return 'future';
+    if (st) return 'failed';
+    return first && iso > first ? 'missed' : 'before';
+  }
+
+  function renderCalendar() {
+    const days = playedDays();
+    const first = [...days.keys()].sort()[0] || null;
+    let solved = 0, notSolved = 0;
+    if (first) {
+      const [fy, fm, fd] = first.split('-').map(Number);
+      for (let d = new Date(fy, fm - 1, fd); isoOf(d) <= today; d.setDate(d.getDate() + 1)) {
+        const st = dayStatus(isoOf(d), days, first);
+        if (st === 'solved') solved++;
+        else if (st === 'failed' || st === 'missed') notSolved++;
+      }
+    }
+    const st = streak();
+    $('calStreak').textContent = `${st.current} ${st.current === 1 ? 'day' : 'days'}`;
+    $('calBest').textContent = `Best ${st.best}`;
+    $('calSolved').textContent = String(solved);
+    $('calMissed').textContent = String(notSolved);
+
+    const y = calView.getFullYear(), m = calView.getMonth();
+    $('calMonth').textContent = calView.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    const grid = $('calGrid');
+    grid.textContent = '';
+    for (const d of ['M', 'T', 'W', 'T', 'F', 'S', 'S']) grid.appendChild(el('span', 'dow', d));
+    for (let i = (new Date(y, m, 1).getDay() + 6) % 7; i > 0; i--) grid.appendChild(el('span', 'day'));
+    for (let d = 1, n = new Date(y, m + 1, 0).getDate(); d <= n; d++) {
+      const iso = `${y}-${pad(m + 1)}-${pad(d)}`;
+      const status = dayStatus(iso, days, first);
+      const cell = el('span', `day ${status}${iso === today ? ' now' : ''}`, String(d));
+      if (DAY_LABELS[status]) cell.setAttribute('aria-label', `${iso}: ${DAY_LABELS[status]}`);
+      grid.appendChild(cell);
+    }
+    const shown = `${y}-${pad(m + 1)}`;
+    $('calPrev').disabled = shown <= (first || today).slice(0, 7);
+    $('calNext').disabled = shown >= today.slice(0, 7);
+  }
+
+  function openCalendar() {
+    calView = new Date(now.getFullYear(), now.getMonth(), 1);
+    renderCalendar();
+    $('calModal').classList.remove('hidden');
+  }
+  function shiftMonth(by) { calView = new Date(calView.getFullYear(), calView.getMonth() + by, 1); renderCalendar(); }
+
+  // ── wiring ───────────────────────────────────────────────────────────
+  const MODALS = ['helpModal', 'resultsModal', 'calModal'];
+  const modalOpen = () => MODALS.some(id => !$(id).classList.contains('hidden'));
+  function closeModals() { for (const id of MODALS) $(id).classList.add('hidden'); }
+
+  $('dayLabel').innerHTML = `<span class="long">Daily </span>#${number}`;
+  $('calBtn').onclick = openCalendar;
+  $('streakTile').onclick = openCalendar;
+  $('calClose').onclick = () => $('calModal').classList.add('hidden');
+  $('calPrev').onclick = () => shiftMonth(-1);
+  $('calNext').onclick = () => shiftMonth(1);
   $('hintBtn').onclick = hint;
   $('undoBtn').onclick = undo;
   $('resultsBtn').onclick = openResults;
+  $('appBtn').href = APP.store;
   $('helpBtn').onclick = () => $('helpModal').classList.remove('hidden');
   $('helpClose').onclick = () => { $('helpModal').classList.add('hidden'); save('wc.seenHelp', true); };
   $('resultsClose').onclick = () => $('resultsModal').classList.add('hidden');
   $('shareBtn').onclick = share;
-  for (const m of [$('helpModal'), $('resultsModal')]) m.addEventListener('click', e => { if (e.target === m) m.classList.add('hidden'); });
+  for (const m of MODALS.map($)) m.addEventListener('click', e => { if (e.target === m) m.classList.add('hidden'); });
 
   document.addEventListener('keydown', e => {
     if (e.ctrlKey || e.metaKey || e.altKey) return;
